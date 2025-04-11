@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Contenido de la lección -->
+        <div class="col-md-8">
+            <div class="row">
+
+                <!-- Contenido del Libro -->
+                <main class="col-md-9 col-lg-10 content">
+                    <h1 class="text-center">📚 Libro Digital de Aprendizaje</h1>
+
+                    <section id="chapter1">
+                        <h2 class="chapter-title">Capítulo 1: Introducción</h2>
+                        <p>Bienvenido a este libro digital donde exploraremos diversos temas educativos.</p>
+                        <img src="https://source.unsplash.com/800x400/?education,learning" class="img-fluid rounded"
+                            alt="Aprendizaje">
+                        <button class="btn btn-primary btn-nav" onclick="scrollToChapter('chapter2')">Siguiente
+                            Capítulo</button>
+                    </section>
+
+                    <hr>
+
+                    <section id="chapter2">
+                        <h2 class="chapter-title">Capítulo 2: Conceptos Clave</h2>
+                        <p>Aquí aprenderás los fundamentos esenciales para dominar este tema.</p>
+                        <video controls class="w-100 rounded">
+                            <source src="video.mp4" type="video/mp4">
+                            Tu navegador no soporta la reproducción de videos.
+                        </video>
+                        <button class="btn btn-secondary btn-nav" onclick="scrollToChapter('chapter1')">Capítulo
+                            Anterior</button>
+                        <button class="btn btn-primary btn-nav" onclick="scrollToChapter('chapter3')">Siguiente
+                            Capítulo</button>
+                    </section>
+
+                    <hr>
+
+                    <section id="chapter3">
+                        <h2 class="chapter-title">Capítulo 3: Aplicaciones</h2>
+                        <p>Veamos cómo aplicar los conceptos en la práctica.</p>
+                        <a href="documento.pdf" download class="btn btn-success">📥 Descargar Material</a>
+                        <button class="btn btn-secondary btn-nav" onclick="scrollToChapter('chapter2')">Capítulo
+                            Anterior</button>
+                        <button class="btn btn-primary btn-nav" onclick="scrollToChapter('chapter4')">Siguiente
+                            Capítulo</button>
+                    </section>
+
+                    <hr>
+
+                    <section id="chapter4">
+                        <h2 class="chapter-title">Capítulo 4: Evaluación</h2>
+                        <p>Pon a prueba tus conocimientos con este cuestionario.</p>
+                        <button class="btn btn-warning">📋 Realizar Evaluación</button>
+                        <button class="btn btn-secondary btn-nav" onclick="scrollToChapter('chapter3')">Capítulo
+                            Anterior</button>
+                    </section>
+                </main>
+            </div>
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-4">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                {% if l.id == lesson.id %}
+                <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}"
+                        style="color: #000; text-decoration: none; font-weight: bold;">
+                        ▶ {{ l.title }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                </li>
+                {% endif %}
+
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function scrollToChapter(id) {
+        document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+</script>
+{% endblock %}

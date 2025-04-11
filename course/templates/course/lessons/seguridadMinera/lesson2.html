@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Contenido de la lección -->
+        <div class="col-md-8">
+            <h1>{{ course.title }}</h1>
+            <h2>{{ lesson.title }}</h2>
+
+            <!-- Tabs de navegación -->
+            <ul class="nav nav-tabs mb-3" id="miningTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="cieloabierto-tab" data-bs-toggle="tab"
+                        data-bs-target="#cieloabierto" type="button" role="tab">Minado a Cielo Abierto</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="subterraneo-tab" data-bs-toggle="tab" data-bs-target="#subterraneo"
+                        type="button" role="tab">Minado Subterráneo</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="especiales-tab" data-bs-toggle="tab" data-bs-target="#especiales"
+                        type="button" role="tab">Métodos Especiales</button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="miningTabsContent">
+                <!-- Tab 1 -->
+                <div class="tab-pane fade show active" id="cieloabierto" role="tabpanel">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header bg-success text-white">
+                            <h3>Minado a Cielo Abierto2</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Este método se utiliza cuando los minerales se encuentran cerca de la superficie. Es
+                                ideal para grandes yacimientos de baja ley, como el cobre o el oro en porfíricos.</p>
+                            <ul>
+                                <li><strong>Ventajas:</strong> Alta productividad, menor costo por tonelada.</li>
+                                <li><strong>Desventajas:</strong> Impacto ambiental elevado, mucha remoción de estéril.
+                                </li>
+                            </ul>
+                            <img src="#" class="img-fluid rounded" alt="Minado a cielo abierto">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 2 -->
+                <div class="tab-pane fade" id="subterraneo" role="tabpanel">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header bg-dark text-white">
+                            <h3>Minado Subterráneo</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Se utiliza cuando el mineral se encuentra a mayor profundidad. Requiere el desarrollo de
+                                túneles, galerías y cámaras.</p>
+                            <ul>
+                                <li><strong>Tipos:</strong> Corte y relleno, sublevel stoping, block caving.</li>
+                                <li><strong>Ventajas:</strong> Menor huella superficial, acceso selectivo.</li>
+                                <li><strong>Desventajas:</strong> Mayor costo inicial, mayor riesgo geotécnico.</li>
+                            </ul>
+                            <img src="#" class="img-fluid rounded" alt="Minado subterráneo">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3 -->
+                <div class="tab-pane fade" id="especiales" role="tabpanel">
+                    <div class="card mb-4 shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h3>Métodos Especiales de Minado</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Incluye técnicas como lixiviación in situ, minería hidráulica, dragado o minería por
+                                disolución. Se aplican en condiciones muy particulares.</p>
+                            <ul>
+                                <li><strong>Usos:</strong> Uranio, sales, arenas bituminosas.</li>
+                                <li><strong>Ventajas:</strong> Menor intervención directa, automatización posible.</li>
+                                <li><strong>Desventajas:</strong> Bajo control directo, limitaciones geológicas.</li>
+                            </ul>
+                            <img src="#" class="img-fluid rounded" alt="Métodos especiales">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Interactivo -->
+            <div class="card mt-5 shadow">
+                <div class="card-header bg-info text-white">
+                    <h4>📚 Quiz de Repaso</h4>
+                </div>
+                <div class="card-body">
+                    <form id="quizForm">
+                        <div class="mb-3">
+                            <label class="form-label">1. ¿Cuál es una ventaja del minado a cielo abierto?</label><br>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="a">
+                                Mayor control geotécnico</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="b">
+                                Menor costo por tonelada</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="c">
+                                Producción subterránea</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">2. ¿Qué método requiere desarrollo de galerías?</label><br>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="a">
+                                Minado hidráulico</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="b">
+                                Cielo abierto</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="c">
+                                Subterráneo</div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" onclick="checkQuiz()">Ver resultados</button>
+                        <div id="quizResult" class="mt-3 fw-bold"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-4">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                {% if l.id == lesson.id %}
+                <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}"
+                        style="color: #000; text-decoration: none; font-weight: bold;">
+                        ▶ {{ l.title }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                </li>
+                {% endif %}
+
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function checkQuiz() {
+        const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+        const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+        let score = 0;
+
+        if (q1 === "b") score++;
+        if (q2 === "c") score++;
+
+        const resultDiv = document.getElementById("quizResult");
+        resultDiv.textContent = `Obtuviste ${score} de 2 respuestas correctas.`;
+        resultDiv.classList.add(score === 2 ? "text-success" : "text-danger");
+    }
+</script>
+{% endblock %}
