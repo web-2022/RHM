@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <!-- Contenido de la lección -->
+        <div class="col-md-10">
+            <h1>{{ course.title }}</h1>
+            <h2>{{ lesson.title }}</h2>
+
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3>Definición de Dilución</h3>
+                </div>
+                <div class="card-body">
+                    <p>La <strong>dilución</strong> es un concepto fundamental en minería que se refiere a la cantidad
+                        de material estéril (sin valor económico) que se mezcla con el mineral durante las operaciones
+                        de extracción.</p>
+
+                    <p>En términos simples, la dilución representa una pérdida económica, ya que implica el
+                        procesamiento de material que no contribuye directamente al valor del mineral recuperado.</p>
+
+                    <div class="alert alert-info mt-4">
+                        <strong>Ejemplo:</strong> Si en una voladura se extraen 100 toneladas de material, pero solo 85
+                        toneladas corresponden a mineral valioso y las otras 15 son estéril, entonces hay una dilución
+                        del 15%.
+                    </div>
+
+                    <h5 class="mt-4">¿Por qué es importante?</h5>
+                    <ul>
+                        <li>Afecta directamente la ley del mineral alimentado a planta.</li>
+                        <li>Incrementa los costos de procesamiento por tonelada útil.</li>
+                        <li>Puede llevar a una subvaloración del yacimiento si no se controla.</li>
+                    </ul>
+
+                    <img src="{% static 'course/img/dilucion_mina.png' %}" alt="Ilustración de dilución"
+                        class="img-fluid rounded mt-3">
+                    <!-- Reproductor de audio -->
+                    <div class="card bg-light p-3 my-4">
+                        <h5 class="mb-2">🔊 Escucha esta explicación:</h5>
+                        <audio controls class="w-100">
+                            <source src="{% static 'course/audio/dilucion_audio.mp4' %}" type="audio/mpeg">
+                            Tu navegador no soporta el audio HTML5.
+                        </audio>
+                    </div>
+
+                    <h5 class="mt-4">Tipos de dilución</h5>
+                    <ol>
+                        <li><strong>Dilución interna:</strong> Proviene del mismo bloque de mineral, pero con leyes
+                            menores al valor de corte.</li>
+                        <li><strong>Dilución externa:</strong> Proviene del estéril que rodea al mineral, como rocas de
+                            contacto o zonas adyacentes.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Quiz de Repaso -->
+            <div class="card mt-5 shadow">
+                <div class="card-header bg-success text-white">
+                    <h4>📘 Quiz de Repaso</h4>
+                </div>
+                <div class="card-body">
+                    <form id="quizForm">
+                        <div class="mb-3">
+                            <label class="form-label">1. ¿Qué representa la dilución en minería?</label>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="a"> La
+                                cantidad de agua utilizada</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="b"> El
+                                material estéril mezclado con el mineral</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="c"> El
+                                tiempo de perforación</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">2. ¿Cuál es una consecuencia directa de la dilución?</label>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="a">
+                                Aumento del valor de venta</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="b">
+                                Disminución de costos</div>
+                            <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="c">
+                                Reducción de la ley del mineral alimentado a planta</div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" onclick="checkQuiz()">Ver resultados</button>
+                        <div id="quizResult" class="mt-3 fw-bold"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-2">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                {% if l.id == lesson.id %}
+                <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}"
+                        style="color: #000; text-decoration: none; font-weight: bold;">
+                        ▶ {{ l.title }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function checkQuiz() {
+        const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+        const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+        let score = 0;
+
+        if (q1 === "b") score++;
+        if (q2 === "c") score++;
+
+        const resultDiv = document.getElementById("quizResult");
+        resultDiv.textContent = `Obtuviste ${score} de 2 respuestas correctas.`;
+        resultDiv.classList.add(score === 2 ? "text-success" : "text-danger");
+    }
+</script>
+{% endblock %}
