@@ -26,7 +26,10 @@ class Enrollment(models.Model):
         super().save(*args, **kwargs)
 
 
-
+# Agregando el archivo adjunto
+def lesson_attachment_path(instance, filename):
+    curso = instance.lesson.course.title.replace(' ', '_').lower()
+    return f'courses/attachments/{curso}/{filename}'
 
 class Lesson(models.Model):
     # TEMPLATE_CHOICES = [
@@ -38,6 +41,7 @@ class Lesson(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField(default="")
     content_page = models.TextField(blank=True, null=True)  # Se agrega este campo
+    # attachment = models.FileField(upload_to=lesson_attachment_path, blank=True, null=True)
     course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name="lessons")
     order = models.PositiveIntegerField(default=0)
     template = models.CharField(max_length=100, default="course/lessons/curso/leccion1.html", help_text="Ejemplo: course/lessons/curso/leccion1.html")
@@ -48,10 +52,22 @@ class Lesson(models.Model):
     
     class Meta:
         ordering = ["course"]  # 🔹 Ordena por título A-Z
-
+        
+        
     def __str__(self):
         # return self.title
         return f"{self.course} - {self.order} - {self.title}"
+        
+class ArchivoAdjunto(models.Model):
+    lesson = models.ForeignKey('Lesson', related_name='archivos', on_delete=models.CASCADE)
+    archivo = models.FileField(upload_to=lesson_attachment_path)
+    nombre = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.nombre or self.archivo.name
+
+
+
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=200)

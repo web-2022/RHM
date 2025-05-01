@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Definiciones Geológicas-Cizalla</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .position {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: rgb(221, 72, 72);
+      border: none;
+      width: 1px;
+      height: 1px;
+      
+    }
+    
+    
+  </style>
+</head>
+<body class="bg-white">
+    <div class="col-md-10">
+        <h1>{{ course.title }}</h1>
+        <h2>{{ lesson.title }}</h2>
+
+        <div class="card mb-4 shadow">
+            <div class="card-header bg-primary text-white">
+              <h3>Cizalla (Shear)</h3>
+            </div>
+            <div class="card-body">
+              <p><strong>Cizalle (Shear): </strong>  es una falla de pequeñas dimensiones. 
+              </p>
+              <h5 class="mt-4">¿Cómo se forman las cizallas?</h5>
+              
+              <ul>
+                <li>Por la aplicación prolongada de esfuerzos tectónicos en la corteza, como en zonas de colisión de placas o movimientos de fallas profundas.</li>
+                
+              </ul>
+    
+              <div class="alert alert-info mt-4">
+                <strong>Ejemplo:</strong> La Zona de Cizalla de San Andrés en California.
+              </div>
+    
+              <h5 class="mt-4">¿Por qué es importante?</h5>
+              <p>Indican zonas de debilidad estructural en la corteza y pueden ser conductores de mineralizaciones (oro, cobre) y sismos.</p>
+              
+              <!-- Imagenes insertada -->
+                  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mt-3">
+                      <!-- Imagen 1 -->
+                      <div class="col">
+                        <div class="card h-100 shadow-sm text-center">
+                          <div class="position-relative ">
+                            <img src="{% static 'course/img/Def.Geo-4.jpg' %}" class="card-img-top" alt="Imagen" onclick="showModalImage(this.src)"
+                            >
+                            
+                            <!-- Tooltips flotantes sobre la imagen -->
+                            
+                            <button type="button"
+                                    class="position"
+                                    style="top: 80%; left: 20%;"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Bandas de cizalla, franjas oscuras desplazadas">
+                            </button>
+                          
+                            <button type="button"
+                                    class="position"
+                                    style="top: 50%; left: 50%;"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Desplazamientos escalonados">
+                            </button>
+                            
+                            <button type="button"
+                                    class="position"
+                                    style="top: 30%; left: 20%;"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Capas de roca más rígida">
+                            </button>
+                            <button type="button"
+                                    class="position"
+                                    style="top: 45%; left: 85%;"
+                                    data-bs-toggle="tooltip"
+                                    data-bs-placement="top"
+                                    title="Minerales oxidados, áreas amarillentas">
+                            </button>
+                          </div>
+                          <div class="card-body">
+                            <p class="card-text">Zona de cizalla dúctil donde las capas de roca han sido deformadas plásticamente, mostrando desplazamiento y estiramiento.</p>
+                          </div>
+                        </div>
+                    </div>
+            </div>
+             <!-- Quiz de Repaso -->
+          <div class="card mt-5 shadow">
+            <div class="card-header bg-success text-white">
+              <h4>📘 Quiz de Repaso</h4>
+            </div>
+            <div class="card-body">
+              <form id="quizForm">
+                <div class="mb-3">
+                  <label class="form-label">1. ¿Qué ocurre en una zona de cizalla en la corteza terrestre?</label>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="a"> Se produce fusión de la roca por temperatura extrema.</div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="b">Se desarrolla deformación plástica o dúctil en la roca.</div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q1" value="c">Se forman cámaras magmáticas subterráneas.</div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">2. Una zona de cizalla se diferencia de una falla porque:</label>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="a">  La cizalla genera deformación continua sin ruptura neta.</div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="b"> En la cizalla no existe deformación de los materiales.</div>
+                  <div class="form-check"><input class="form-check-input" type="radio" name="q2" value="c"> La cizalla siempre provoca separación total de bloques.</div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="checkQuiz()">Ver resultados</button>
+                <div id="quizResult" class="mt-3 fw-bold"></div>
+              </form>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered"> 
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="imageModalLabel"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center">
+              <img id="modalImage" src="" class="img-fluid rounded" alt="Imagen ampliada">
+            </div>
+          </div>
+        </div>
+      </div>
+         
+      </div>
+      <!-- Script para el quiz -->
+      <script>
+        function checkQuiz() {
+          const respuestas = {
+            q1: 'b',
+            q2: 'a'
+          };
+    
+          const form = document.getElementById('quizForm');
+          const resultDiv = document.getElementById('quizResult');
+          let score = 0;
+    
+          for (let key in respuestas) {
+            const seleccionada = form.querySelector(`input[name="${key}"]:checked`);
+            if (seleccionada && seleccionada.value === respuestas[key]) {
+              score++;
+            }
+          }
+    
+          resultDiv.innerText = `Obtuviste ${score} de 2 respuestas correctas.`;
+          resultDiv.className = 'alert ' + (score === 2 ? 'alert-success' : 'alert-warning');
+        }
+      </script>
+      
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
+    
+    function showModalImage(src) {
+    const modalImage = document.getElementById('modalImage');
+    modalImage.src = src;
+    const myModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    myModal.show();
+  }
+  </script>
+  
+</body>
+</html>

@@ -17,6 +17,12 @@
                     <section id="chapter1">
                         <h2 class="chapter-title">Capítulo 1: Introducción</h2>
                         <p>Bienvenido a este libro digital donde exploraremos diversos temas educativos.</p>
+                        <!-- Adjuntando archivo -->
+                        {% for archivo in lesson.archivos.all %}
+                        <a href="{{ archivo.archivo.url }}" download>{{ archivo.nombre|default:archivo.archivo.name
+                            }}</a>
+                        {% endfor %}
+
                         <img src="https://source.unsplash.com/800x400/?education,learning" class="img-fluid rounded"
                             alt="Aprendizaje">
                         <button class="btn btn-primary btn-nav" onclick="scrollToChapter('chapter2')">Siguiente
