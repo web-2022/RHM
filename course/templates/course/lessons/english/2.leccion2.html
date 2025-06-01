@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <!-- Contenido de la lección -->
+        <div class="col-md-10">
+            <h1>{{ course.title }}</h1>
+            <h2>{{ lesson.title }}</h2>
+
+            <div class="container py-5 text-center">
+                <!-- Barra de progreso -->
+                <div class="progress mb-4" style="height: 25px;">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                         style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        0%
+                    </div>
+                </div>
+
+                <div id="quiz-box" class="bg-white p-4 rounded shadow mx-auto" style="max-width: 600px;">
+                    <h2>English Vocabulary Quiz</h2>
+                    <div class="d-inline-flex align-items-center justify-content-center mb-3">
+                        <p id="definition" class="mt-3 fst-italic text-success mb-0"></p>
+                        <button id="pronounce-definition" class="btn btn-sm btn-outline-primary ms-2" title="Listen pronunciation">
+                            🔊
+                        </button>
+                    </div>
+                    
+                    <!-- Opciones de palabras para ver, sin funcionalidad al click -->
+                    <div id="options" class="mb-3"></div>
+
+                    <label for="answer" class="visually-hidden">Your Answer</label>
+                    <input type="text" id="answer" class="form-control my-2" placeholder="Type the word here">
+                    <button id="submit-btn" onclick="checkAnswer()" class="btn btn-primary mt-2">Submit</button>
+                    <p id="result" class="mt-3 fw-bold"></p>
+                    <p id="score" class="fw-bold"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-2">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                    {% if l.id == lesson.id %}
+                        <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                            <a href="{% url 'course:lesson_detail' course.id l.id %}" style="color: #000; text-decoration: none; font-weight: bold;">
+                                ▶ {{ l.title }}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item">
+                            <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    const vocab = {
+        "apple": "a fruit that is red or green and round",
+        "run": "to move fast with your feet",
+        "book": "a set of written pages",
+        "happy": "feeling good or joyful",
+        "water": "a clear liquid that we drink"
+    };
+
+    const words = Object.keys(vocab);
+    let current = 0;
+    let score = 0;
+
+    // Función para mezclar un array (Fisher-Yates)
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            // Intercambiar elementos
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+
+        return array;
+    }
+
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // idioma inglés
+            window.speechSynthesis.speak(utterance);
+        } else {
+            alert("Sorry, your browser does not support speech synthesis.");
+        }
+    }
+
+    function updateProgressBar() {
+        const bar = document.getElementById("progress-bar");
+        if (words.length === 0) {
+            bar.style.width = `0%`;
+            bar.textContent = "";
+            bar.style.display = "none";
+            return;
+        }
+
+        bar.style.display = "block";
+
+        const progress = current >= words.length ? 100 : (current / words.length) * 100;
+        bar.style.width = `${progress}%`;
+        bar.setAttribute("aria-valuenow", progress);
+        bar.textContent = `${Math.round(progress)}%`;
+    }
+
+    function showQuestion() {
+        if (words.length === 0) {
+            document.getElementById("quiz-box").innerHTML = "<p>No vocabulary available.</p>";
+            updateProgressBar();
+            return;
+        }
+
+        updateProgressBar();
+
+        if (current < words.length) {
+            const word = words[current];
+            const definitionText = `What word means: "${vocab[word]}"?`;
+
+            // Mostrar la definición y configurar botón de pronunciación
+            const defEl = document.getElementById("definition");
+            defEl.textContent = definitionText;
+
+            const pronounceDefBtn = document.getElementById("pronounce-definition");
+            pronounceDefBtn.onclick = () => speak(definitionText);
+
+            // Generar opciones: 1 correcta + 3 incorrectas
+            const incorrectWords = words.filter(w => w !== word);
+            const options = shuffle(incorrectWords).slice(0, 3);
+            options.push(word);
+            shuffle(options);
+
+            const optionsDiv = document.getElementById("options");
+            optionsDiv.innerHTML = "";
+            options.forEach(option => {
+                // Botón para la opción con pronunciación individual
+                const btn = document.createElement("button");
+                btn.textContent = option;
+                btn.className = "btn btn-outline-secondary m-1";
+                btn.type = "button";
+
+                // Botón de pronunciación para la opción
+                const speakBtn = document.createElement("button");
+                speakBtn.innerHTML = "🔊";
+                speakBtn.className = "btn btn-sm btn-outline-info ms-1";
+                speakBtn.type = "button";
+                speakBtn.title = "Listen pronunciation";
+                speakBtn.onclick = () => speak(option);
+
+                // Contenedor para palabra + botón
+                const container = document.createElement("span");
+                container.className = "d-inline-flex align-items-center m-1";
+                container.appendChild(btn);
+                container.appendChild(speakBtn);
+
+                optionsDiv.appendChild(container);
+            });
+
+            document.getElementById("answer").value = "";
+            document.getElementById("result").textContent = "";
+            document.getElementById("score").textContent = `Score: ${score} / ${words.length}`;
+            document.getElementById("answer").focus();
+
+        } else {
+            updateProgressBar();
+            document.getElementById("quiz-box").innerHTML =
+                `<h2 class="text-success">Quiz Finished!</h2>
+                 <p class="fw-bold">You got ${score} out of ${words.length} correct.</p>
+                 <button onclick="restartQuiz()" class="btn btn-secondary mt-3">Try Again</button>`;
+        }
+    }
+
+    function checkAnswer() {
+        const userAnswer = document.getElementById("answer").value.trim().toLowerCase();
+        const correctWord = words[current];
+
+        if (userAnswer === correctWord) {
+            document.getElementById("result").textContent = "✅ Correct!";
+            document.getElementById("result").className = "mt-3 fw-bold text-success";
+            score++;
+        } else {
+            document.getElementById("result").textContent = `❌ Wrong! The correct word was "${correctWord}".`;
+            document.getElementById("result").className = "mt-3 fw-bold text-danger";
+        }
+
+        current++;
+        setTimeout(showQuestion, 1000);
+    }
+
+    function restartQuiz() {
+        current = 0;
+        score = 0;
+        showQuestion();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        showQuestion();
+
+        const answerInput = document.getElementById("answer");
+        answerInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("submit-btn").click();
+            }
+        });
+    });
+</script>
+{% endblock %}

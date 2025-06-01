@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div>
+    <div class="row">
+        <!-- Contenido de la lección -->
+        <div class="col-md-10">
+            <h1>{{ course.title }}</h1>
+            <h2>{{ lesson.title }}</h2>
+
+            <div class="container shadow p-4 bg-white rounded">
+                <h2 class="text-center mb-4">🧠 Vocabulary Quiz</h2>
+
+                <!-- Progreso y puntaje -->
+                <div class="mb-2 d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Progreso:</small>
+                    <small id="scoreDisplay" class="score-text">Puntaje: 0 / 0</small>
+                </div>
+
+                <div class="progress mb-3" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped bg-success" id="progressBar" role="progressbar"
+                        style="width: 0%;">
+                        0%
+                    </div>
+                </div>
+
+                <!-- Pregunta actual -->
+                <div class="mb-3">
+                    <h4 id="question" class="fst-italic text-success"></h4>
+                    <button id="pronounceBtn" class="btn btn-sm btn-info mb-3" onclick="pronounceWord()">🔊 Escuchar
+                        pronunciación</button>
+                    <div class="text-muted" id="translation"></div>
+                </div>
+
+                <!-- Opciones -->
+                <div id="options" class="mb-3"></div>
+
+                <!-- Resultado -->
+                <div class="result text-center mb-3" id="result"></div>
+                <div id="commentText"></div>
+
+                <!-- Botones -->
+                <div class="text-center" id="buttonsContainer">
+                    <button class="btn btn-success me-2" onclick="nextQuestion()" id="nextBtn" disabled>Siguiente
+                        pregunta</button>
+                    <button class="btn btn-secondary d-none" onclick="restartQuiz()" id="restartBtn">Volver a
+                        empezar</button>
+                </div>
+            </div>
+
+            <!-- 📎 Material complementario -->
+            {% if lesson.archivos.all %}
+            <div class="card shadow-lg mb-5">
+                <div class="card-header bg-warning text-dark d-flex align-items-center">
+                    <h5 class="mb-0">📎 Material Complementario / Archivos de descarga</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for archivo in lesson.archivos.all %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ archivo.nombre|default:archivo.archivo.name }}
+                            <a href="{{ archivo.archivo.url }}" class="btn btn-sm btn-outline-primary" download>
+                                Descargar
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-2">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                {% if l.id == lesson.id %}
+                <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}"
+                        style="color: #000; text-decoration: none; font-weight: bold;">
+                        ▶ {{ l.title }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    const vocab = {
+        "happy": { en: "feeling good or joyful", es: "feliz" },
+        "angry": { en: "feeling mad or upset", es: "enojado" },
+        "cold": { en: "low in temperature", es: "frío" },
+        "fast": { en: "moving quickly", es: "rápido" },
+        "clean": { en: "not dirty", es: "limpio" },
+        "tall": { en: "having great height", es: "alto" },
+        "soft": { en: "easy to press or not hard", es: "suave" },
+        "big": { en: "large in size", es: "grande" },
+        "fun": { en: "something that gives joy or laughter", es: "divertido" },
+        "kind": { en: "nice and helpful", es: "amable" }
+    };
+
+    const wrongOptions = [
+        { en: "a type of bird", es: "un tipo de ave" },
+        { en: "something you eat", es: "algo que comes" },
+        { en: "a kind of music", es: "un tipo de música" },
+        { en: "a number", es: "un número" },
+        { en: "a color", es: "un color" },
+        { en: "a kind of tree", es: "un tipo de árbol" },
+        { en: "a place to sit", es: "un lugar para sentarse" },
+        { en: "part of a car", es: "una parte de un auto" },
+        { en: "a tool for cooking", es: "una herramienta para cocinar" },
+        { en: "a sound animals make", es: "un sonido que hacen los animales" }
+    ];
+
+    const totalQuestions = Object.keys(vocab).length;
+    let usedWords = new Set();
+    let currentWord = "";
+    let correctAnswer = "";
+    let correctSpanish = "";
+    let score = 0;
+    let questionCount = 0;
+
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const commentText = document.getElementById("commentText");
+    const pronounceBtn = document.getElementById("pronounceBtn");
+
+    function nextQuestion() {
+        commentText.textContent = ""; // borrar comentario cada pregunta
+
+        if (questionCount >= totalQuestions) {
+            document.getElementById("question").innerText = "🎉 ¡Quiz finalizado!";
+            document.getElementById("translation").innerText = "";
+            document.getElementById("options").innerHTML = "";
+            document.getElementById("result").innerHTML = `<strong>Resultado final:</strong> ${score} de ${totalQuestions}`;
+            nextBtn.classList.add("d-none"); // ocultar botón siguiente
+            restartBtn.classList.remove("d-none"); // mostrar botón reiniciar
+            pronounceBtn.classList.add("d-none"); // ocultar botón pronunciación
+
+            // Mensaje según puntaje
+            if (score === totalQuestions) {
+                commentText.textContent = "🎊 ¡Puntaje perfecto! ¡Eres un maestro del idioma!";
+            } else if (score > totalQuestions / 2) {
+                commentText.textContent = "💪 ¡Buen trabajo! ¡Sigue practicando!";
+            } else {
+                commentText.textContent = "📘 ¡Sigue aprendiendo! ¡Mejorarás cada día!";
+            }
+            return;
+        }
+
+        // Restablecer botón siguiente: deshabilitado
+        nextBtn.disabled = true;
+        nextBtn.classList.remove("d-none");
+        restartBtn.classList.add("d-none");
+        pronounceBtn.classList.remove("d-none");
+
+        const remainingWords = Object.keys(vocab).filter(word => !usedWords.has(word));
+        currentWord = remainingWords[Math.floor(Math.random() * remainingWords.length)];
+        usedWords.add(currentWord);
+        correctAnswer = vocab[currentWord].en;
+        correctSpanish = vocab[currentWord].es;
+
+        let options = [{ en: correctAnswer, es: correctSpanish }];
+
+        while (options.length < 4) {
+            let wrong = wrongOptions[Math.floor(Math.random() * wrongOptions.length)];
+            if (!options.some(o => o.en === wrong.en)) {
+                options.push(wrong);
+            }
+        }
+
+        options = options.sort(() => Math.random() - 0.5);
+
+        document.getElementById("question").innerText = `❓ ¿Qué significa la palabra: '${currentWord}'?`;
+        document.getElementById("translation").innerText = `Significado en español: ${correctSpanish}`;
+        document.getElementById("options").innerHTML = "";
+        document.getElementById("result").innerText = "";
+
+        options.forEach(opt => {
+            const optionDiv = document.createElement("div");
+            optionDiv.className = "d-flex align-items-center mb-2";
+
+            const btnOption = document.createElement("button");
+            btnOption.className = "btn btn-outline-success w-100 option-btn";
+            btnOption.innerHTML = `${opt.en}<span class="option-span">(${opt.es})</span>`;
+            btnOption.onclick = () => checkAnswer(opt.en, btnOption);
+
+            const audioBtn = document.createElement("button");
+            audioBtn.className = "btn btn-sm btn-info ms-2";
+            audioBtn.innerHTML = "🔈Escuchar";
+            audioBtn.onclick = (e) => {
+                e.stopPropagation();
+                speakEnglishOption(opt.en);
+            };
+
+            optionDiv.appendChild(btnOption);
+            optionDiv.appendChild(audioBtn);
+            document.getElementById("options").appendChild(optionDiv);
+        });
+
+        updateProgress();
+    }
+
+    function checkAnswer(selected, button) {
+        const result = document.getElementById("result");
+
+        // Evitar respuesta si ya contestó (botones deshabilitados)
+        if (button.disabled) return;
+
+        if (selected === correctAnswer) {
+            result.innerHTML = '✅ ¡Correcto!';
+            result.style.color = 'green';
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-success');
+            score++;
+        } else {
+            result.innerHTML = `❌ Incorrecto. La respuesta correcta es: ${correctAnswer} (${correctSpanish})`;
+            result.style.color = 'red';
+            button.classList.remove('btn-outline-success');
+            button.classList.add('btn-danger');
+        }
+
+        // Deshabilitar todos los botones para que no puedan elegir otra opción
+        document.querySelectorAll('#options button.btn').forEach(btn => btn.disabled = true);
+
+        questionCount++;
+        updateProgress();
+
+        // Habilitar botón siguiente pregunta sólo después de seleccionar respuesta
+        nextBtn.disabled = false;
+    }
+
+    function updateProgress() {
+        const percent = Math.round((questionCount / totalQuestions) * 100);
+        const progressBar = document.getElementById("progressBar");
+        const scoreDisplay = document.getElementById("scoreDisplay");
+
+        progressBar.style.width = `${percent}%`;
+        progressBar.innerText = `${percent}%`;
+
+        scoreDisplay.innerText = `Puntaje: ${score} / ${totalQuestions}`;
+    }
+
+
+    function pronounceWord() {
+        const utterance = new SpeechSynthesisUtterance(currentWord);
+        utterance.lang = "en-US";
+        speechSynthesis.speak(utterance);
+    }
+
+    function speakEnglishOption(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-US";
+        speechSynthesis.speak(utterance);
+    }
+
+    function restartQuiz() {
+        score = 0;
+        questionCount = 0;
+        usedWords.clear();
+        nextBtn.classList.remove("d-none");
+        restartBtn.classList.add("d-none");
+        pronounceBtn.classList.remove("d-none");
+        nextQuestion();
+    }
+
+    nextQuestion();
+</script>
+{% endblock %}
