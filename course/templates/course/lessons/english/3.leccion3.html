@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div>
+    <div class="row">
+
+
+        <!-- Contenido de la lección -->
+        <div class="col-md-10">
+            <h1>{{ course.title }}</h1>
+            <h2>{{ lesson.title }}</h2>
+
+            <div class="container py-5"></div>
+
+            <div class="bg-light p-4 rounded shadow text-center">
+                <div class="progress mb-4" style="height: 25px;">
+                    <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                        role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                        0%
+                    </div>
+                </div>
+
+                <h3>Translate from Spanish to English</h3>
+                <div class="d-inline-flex align-items-center justify-content-center mb-3">
+                    <p id="spanish-word" class="fs-4 text-primary mb-0"></p>
+                    <button id="pronounce-spanish" class="btn btn-sm btn-outline-secondary ms-2"
+                        title="Listen pronunciation">🔊</button>
+                </div>
+
+                <div id="options" class="mb-3"></div>
+
+                <input type="text" id="answer" class="form-control my-2" placeholder="Type the English word here">
+                <button id="submit-btn" onclick="checkAnswer()" class="btn btn-success mt-2">Submit</button>
+                <p id="result" class="mt-3 fw-bold"></p>
+                <p id="score" class="fw-bold"></p>
+            </div>
+        </div>
+
+        <!-- Índice del curso -->
+        <div class="col-md-2">
+            <h4>Índice del curso</h4>
+            <ul class="list-group">
+                {% for l in lessons %}
+                {% if l.id == lesson.id %}
+                <li class="list-group-item" style="background-color: #ffe5b4; color: #000; border-color: #ffc107;">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}"
+                        style="color: #000; text-decoration: none; font-weight: bold;">
+                        ▶ {{ l.title }}
+                    </a>
+                </li>
+                {% else %}
+                <li class="list-group-item">
+                    <a href="{% url 'course:lesson_detail' course.id l.id %}">{{ l.title }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+<script>
+    const wordList = [
+        { eng: "apple", spa: "manzana" },
+        { eng: "house", spa: "casa" },
+        { eng: "cat", spa: "gato" },
+        { eng: "water", spa: "agua" },
+        { eng: "friend", spa: "amigo" },
+        { eng: "school", spa: "escuela" },
+        { eng: "car", spa: "coche" },
+        { eng: "book", spa: "libro" },
+        { eng: "love", spa: "amor" },
+        { eng: "hello", spa: "hola" }
+    ];
+
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    let shuffled = shuffle([...wordList]);
+    let current = 0;
+    let score = 0;
+
+    function speak(text, lang = 'es-ES') {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            speechSynthesis.speak(utterance);
+        }
+    }
+
+    function updateProgressBar() {
+        const progress = current / shuffled.length * 100;
+        const bar = document.getElementById("progress-bar");
+        bar.style.width = `${progress}%`;
+        bar.setAttribute("aria-valuenow", progress);
+        bar.textContent = `${Math.round(progress)}%`;
+    }
+
+    function showQuestion() {
+        if (current >= shuffled.length) {
+            document.getElementById("spanish-word").textContent = "🏁 Game Over!";
+            document.getElementById("options").innerHTML = "";
+            document.getElementById("result").innerHTML = `<span class="text-primary">You got ${score} out of ${shuffled.length} correct!</span>`;
+            document.getElementById("score").innerHTML = score === shuffled.length
+                ? "🎊 Perfect score! You’re a language master!"
+                : score > shuffled.length / 2
+                    ? "💪 Great job! Keep practicing!"
+                    : "📘 Keep learning! You’ll get better every day!";
+            return;
+        }
+
+        const word = shuffled[current];
+        document.getElementById("spanish-word").textContent = word.spa;
+
+        document.getElementById("pronounce-spanish").onclick = () => speak(word.spa, 'es-ES');
+
+        const wrongWords = shuffle(wordList.filter(w => w.eng !== word.eng)).slice(0, 3);
+        const options = shuffle([word, ...wrongWords]);
+
+        const optionsDiv = document.getElementById("options");
+        optionsDiv.innerHTML = "";
+        options.forEach(opt => {
+            const btn = document.createElement("button");
+            btn.textContent = opt.eng;
+            btn.className = "btn btn-outline-dark m-1";
+
+            const speakBtn = document.createElement("button");
+            speakBtn.innerHTML = "🔊";
+            speakBtn.className = "btn btn-sm btn-outline-info ms-1";
+            speakBtn.onclick = () => speak(opt.eng, 'en-US');
+
+            const container = document.createElement("span");
+            container.className = "d-inline-flex align-items-center m-1";
+            container.appendChild(btn);
+            container.appendChild(speakBtn);
+
+            optionsDiv.appendChild(container);
+        });
+
+        document.getElementById("answer").value = "";
+        document.getElementById("result").textContent = "";
+        document.getElementById("score").textContent = `Score: ${score} / ${shuffled.length}`;
+        updateProgressBar();
+    }
+
+    function checkAnswer() {
+        const answer = document.getElementById("answer").value.trim().toLowerCase();
+        const correct = shuffled[current].eng;
+
+        const result = document.getElementById("result");
+
+        if (answer === correct.toLowerCase()) {
+            result.textContent = "✅ Correct!";
+            result.className = "mt-3 fw-bold text-success";
+            score++;
+        } else {
+            result.textContent = `❌ Wrong! The correct word was "${correct}".`;
+            result.className = "mt-3 fw-bold text-danger";
+        }
+
+        current++;
+        setTimeout(showQuestion, 1200);
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        showQuestion();
+        document.getElementById("answer").addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                checkAnswer();
+            }
+        });
+    });
+</script>
+{% endblock %}
