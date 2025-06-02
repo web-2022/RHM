@@ -50,25 +50,7 @@
             </div>
 
             <!-- 📎 Material complementario -->
-            {% if lesson.archivos.all %}
-            <div class="card shadow-lg mb-5">
-                <div class="card-header bg-warning text-dark d-flex align-items-center">
-                    <h5 class="mb-0">📎 Material Complementario / Archivos de descarga</h5>
-                </div>
-                <div class="card-body">
-                    <ul class="list-group">
-                        {% for archivo in lesson.archivos.all %}
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            {{ archivo.nombre|default:archivo.archivo.name }}
-                            <a href="{{ archivo.archivo.url }}" class="btn btn-sm btn-outline-primary" download>
-                                Descargar
-                            </a>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            {% endif %}
+ 
         </div>
 
         <!-- Índice del curso -->
